@@ -1,3 +1,31 @@
+<<<<<<< HEAD
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+}
+#user-menu {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+#post-form, #user-info {
+    text-align: center;
+    margin: 20px;
+}
+#posts-container, #user-posts {
+    margin: 20px;
+}
+button {
+    padding: 5px 10px;
+}
+=======
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -21,3 +49,4 @@ header {
 #posts-container {
     margin: 20px;
 }
+>>>>>>> 919abc9d0df8d02d973a17fefb912aef295608f5
