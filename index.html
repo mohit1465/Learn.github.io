@@ -1,65 +1,256 @@
-<<<<<<< HEAD
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photo Sharing App</title>
-    <link rel="stylesheet" href="css/style.css">
-    <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js"></script>
-    <script defer src="js/app.js"></script>
-    <script defer src="js/firestore.js"></script>
+    <title>Company List and Notes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        .company, .note {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 10px auto;
+            width: 300px;
+            background-color: #fff;
+        }
+        .user-info {
+            margin: 20px;
+        }
+        .rating {
+            margin-top: 10px;
+        }
+        #updateProfile {
+            margin-top: 20px;
+        }
+        #updateProfile input {
+            display: block;
+            margin: 10px auto;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>Photo Sharing App</h1>
-        <div id="user-menu">
-            <button id="login-btn">Login</button>
-            <button id="logout-btn">Logout</button>
-            <a href="profile.html" id="profile-link">Profile</a>
-        </div>
-    </header>
-    <main>
-        <div id="post-form">
-            <input type="file" id="file-input">
-            <button id="upload-btn">Upload</button>
-        </div>
-        <div id="posts-container"></div>
-    </main>
+    <div class="user-info" id="userInfo"></div>
+
+    <div><a href="text-editor.html">click</a></div>
+    
+    <h3 id="authLinks">
+        <span id="loginSignupLinks">
+            <a href="login.html">Login</a> | <a href="signup.html">Signup</a>
+        </span>
+    </h3>
+    
+    <h2>Companies</h2>
+    <div id="companyList"></div>
+
+    <!-- Section to create and retrieve notes -->
+    <div id="notesSection">
+        <h2>Create Note</h2>
+        <label>Note ID:</label>
+        <input type="text" id="noteId" />
+        <label>Password:</label>
+        <input type="password" id="notePassword" />
+        <label>Note Content:</label>
+        <textarea id="noteContent"></textarea>
+        <button id="createNoteBtn">Create Note</button>
+
+        <h2>Retrieve Note</h2>
+        <label>Note ID:</label>
+        <input type="text" id="retrieveNoteId" />
+        <label>Password:</label>
+        <input type="password" id="retrieveNotePassword" />
+        <button id="retrieveNoteBtn">Retrieve Note</button>
+        <div id="retrievedNoteContent"></div>
+    </div>
+
+    <div id="updateProfile">
+        <h3>Update Profile</h3>
+        <label>Name:</label>
+        <input type="text" id="updateName" />
+        <label>Favorite Categories:</label>
+        <input type="text" id="updateCategories" />
+        <label>Designation:</label>
+        <input type="text" id="updateDesignation" />
+        <label>Age:</label>
+        <input type="number" id="updateAge" />
+        <label>Mobile:</label>
+        <input type="text" id="updateMobile" />
+        <label>New Password:</label>
+        <input type="password" id="updatePassword" />
+        <button id="updateProfileBtn">Update Profile</button>
+    </div>
+
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAuRv2uCN4mITyc2Y21iQkkUTv_SCzE_qQ",
+            authDomain: "website-10efd.firebaseapp.com",
+            projectId: "website-10efd",
+            storageBucket: "website-10efd.appspot.com",
+            messagingSenderId: "394728984945",
+            appId: "1:394728984945:web:cafbc90a99dbef0642a6d0",
+            measurementId: "G-CH0T2RNMBZ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        onAuthStateChanged(auth, async user => {
+            const userInfo = document.getElementById('userInfo');
+            const authLinks = document.getElementById('authLinks');
+
+            if (user) {
+                const userDoc = await getDoc(doc(db, 'users', user.uid));
+                const userData = userDoc.data();
+
+                userInfo.innerHTML = `
+                    <h3>Logged in as: ${userData.name} (${userData.email})</h3>
+                    <p>Designation: ${userData.designation}</p>
+                    <p>Age: ${userData.age}</p>
+                    <p>Mobile: ${userData.mobile}</p>
+                    <p>Favorite Categories: ${userData.categories.join(', ')}</p>
+                    <button id="logoutBtn">Logout</button>
+                `;
+
+                // Populate the update fields
+                document.getElementById('updateName').value = userData.name;
+                document.getElementById('updateCategories').value = userData.categories.join(', ');
+                document.getElementById('updateDesignation').value = userData.designation;
+                document.getElementById('updateAge').value = userData.age;
+                document.getElementById('updateMobile').value = userData.mobile;
+
+                authLinks.style.display = 'none';
+
+                document.getElementById('logoutBtn').addEventListener('click', () => {
+                    signOut(auth).then(() => {
+                        window.location.href = '';
+                    }).catch(error => {
+                        console.error('Error logging out:', error);
+                    });
+                });
+            } else {
+                authLinks.style.display = 'block';
+                userInfo.innerHTML = '';
+            }
+        });
+
+        // Function to create a note
+        async function createNote(noteId, password, data) {
+            try {
+                await setDoc(doc(db, 'notes', noteId), { password, data });
+                alert('Note created successfully!');
+            } catch (error) {
+                console.error('Error creating note:', error);
+                alert('Failed to create note.');
+            }
+        }
+
+        // Function to retrieve a note
+        async function retrieveNote(noteId, password) {
+            try {
+                const noteDoc = await getDoc(doc(db, 'notes', noteId));
+                if (noteDoc.exists()) {
+                    const noteData = noteDoc.data();
+                    if (noteData.password === password) {
+                        document.getElementById('retrievedNoteContent').innerText = `Note Data: ${noteData.data}`;
+                    } else {
+                        alert('Incorrect password.');
+                    }
+                } else {
+                    alert('Note not found.');
+                }
+            } catch (error) {
+                console.error('Error retrieving note:', error);
+                alert('Failed to retrieve note.');
+            }
+        }
+
+        // Event listeners for creating and retrieving notes
+        document.getElementById('createNoteBtn').addEventListener('click', () => {
+            const noteId = document.getElementById('noteId').value;
+            const password = document.getElementById('notePassword').value;
+            const data = document.getElementById('noteContent').value;
+            createNote(noteId, password, data);
+        });
+
+        document.getElementById('retrieveNoteBtn').addEventListener('click', () => {
+            const noteId = document.getElementById('retrieveNoteId').value;
+            const password = document.getElementById('retrieveNotePassword').value;
+            retrieveNote(noteId, password);
+        });
+
+        // Function to fetch and display companies
+        async function fetchCompanies() {
+            const companiesCollection = collection(db, 'companies');
+            const companyDocs = await getDocs(companiesCollection);
+            const companyList = document.getElementById('companyList');
+
+            companyDocs.forEach(doc => {
+                const company = doc.data();
+
+                const location = company.location || {};
+                const contact = company.contact || {};
+                const address = location.address || 'N/A';
+                const city = location.city || 'N/A';
+                const state = location.state || 'N/A';
+                const zip = location.zip || 'N/A';
+                const phone = contact.phone || 'N/A';
+                const email = contact.email || 'N/A';
+
+                const companyDiv = document.createElement('div');
+                companyDiv.classList.add('company');
+                companyDiv.innerHTML = `
+                    <h3>${company.name || 'N/A'}</h3>
+                    <p><strong>Industry:</strong> ${company.industry || 'N/A'}</p>
+                    <p><strong>Location:</strong> ${address}, ${city}, ${state} ${zip}</p>
+                    <p><strong>Contact:</strong> ${phone} | ${email}</p>
+                    <p><strong>Employees:</strong> ${company.employees || 'N/A'}</p>
+                    <p><strong>Founded:</strong> ${company.founded || 'N/A'}</p>
+                `;
+                companyList.appendChild(companyDiv);
+            });
+        }
+
+        fetchCompanies();
+
+        // Update profile logic
+        document.getElementById('updateProfileBtn').addEventListener('click', async () => {
+            const name = document.getElementById('updateName').value;
+            const categories = document.getElementById('updateCategories').value.split(',');
+            const designation = document.getElementById('updateDesignation').value;
+            const age = document.getElementById('updateAge').value;
+            const mobile = document.getElementById('updateMobile').value;
+            const newPassword = document.getElementById('updatePassword').value;
+
+            const user = auth.currentUser;
+            const userDocRef = doc(db, 'users', user.uid);
+
+            if (newPassword) {
+                updatePassword(user, newPassword).then(() => {
+                    alert('Password updated successfully.');
+                }).catch(error => {
+                    console.error('Error updating password:', error);
+                    alert('Failed to update password.');
+                });
+            }
+
+            try {
+                await updateDoc(userDocRef, { name, categories, designation, age, mobile });
+                alert('Profile updated successfully!');
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                alert('Failed to update profile.');
+            }
+        });
+    </script>
 </body>
 </html>
-=======
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photo Sharing App</title>
-    <link rel="stylesheet" href="css/style.css">
-    <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
-    <script defer src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js"></script>
-    <script defer src="js/app.js"></script>
-</head>
-<body>
-    <header>
-        <h1>Photo Sharing App</h1>
-        <div id="user-menu">
-            <button id="login-btn">Login</button>
-            <button id="logout-btn">Logout</button>
-        </div>
-    </header>
-    <main>
-        <div id="post-form">
-            <input type="file" id="file-input">
-            <button id="upload-btn">Upload</button>
-        </div>
-        <div id="posts-container"></div>
-    </main>
-</body>
-</html>
->>>>>>> 919abc9d0df8d02d973a17fefb912aef295608f5
