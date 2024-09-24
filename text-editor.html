@@ -14,7 +14,7 @@
     <header>
         <div class="header-content">
             <div class="left-section">
-                <a href="../index.html" class="nav-button">Home</a>
+                <a href="index.html" class="nav-button">Home</a>
                 <div class="file-dropdown">
                     <button class="file-dropbtn">File</button>
                     <div class="file-dropdown-content">
@@ -23,7 +23,7 @@
                         <a href="#" id="save-file">Save</a>
                         <a href="#" id="save-as-file">Save As</a>
                         <a href="#" id="save-online">Save Online</a>
-                        <a href="#" id="loadFileFromGist">Load Online</a>
+                        <a href="#" id="load-file">Load Online</a>
                     </div>
                 </div>
                 <div class="edit-dropdown">
@@ -35,15 +35,6 @@
                 </div>
             </div>
             <div class="right-section">
-                <div class="menu-bar" id="menu-bar" style="display: none;">
-                    <div class="user-info" id="userInfo"></div> 
-                    <h3 id="authLinks">
-                        <span id="loginSignupLinks">
-                            <a href="login.html" class="auth-link">Login</a> | <a href="signup.html" class="auth-link">Sign Up</a>
-                        </span>
-                    </h3>
-                </div>
-
                 <div class="theme-dropdown">
                     <button class="theme-dropbtn">Change Theme</button>
                     <div class="theme-dropdown-content">
@@ -53,6 +44,8 @@
                 </div>
             
                 <a id="metaMenu">&#9776;</a>
+                <div id="profileInfo">
+                </div>
             </div>
         </div>
     </header>
@@ -88,108 +81,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/search/searchcursor.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/search/matchesonscrollbar.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/mode/overlay.min.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script> <!-- Added Firestore SDK -->
+  
+    <script src="firebase-config.js"></script>
+    
     <script src="text-editor.js"></script>
-
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut, updatePassword } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs, doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/9.19.1/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAuRv2uCN4mITyc2Y21iQkkUTv_SCzE_qQ",
-            authDomain: "website-10efd.firebaseapp.com",
-            projectId: "website-10efd",
-            storageBucket: "website-10efd.appspot.com",
-            messagingSenderId: "394728984945",
-            appId: "1:394728984945:web:cafbc90a99dbef0642a6d0",
-            measurementId: "G-CH0T2RNMBZ"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        onAuthStateChanged(auth, async user => {
-        const userInfo = document.getElementById('userInfo');
-        const authLinks = document.getElementById('authLinks');
-
-        if (user) {
-            const userDoc = await getDoc(doc(db, 'users', user.uid));
-            const userData = userDoc.data();
-
-            userInfo.innerHTML = `
-                <h3>Logged in as: ${userData.name} (${userData.email})</h3>
-                <p>Designation: ${userData.designation}</p>
-                <p>Age: ${userData.age}</p>
-                <p>Mobile: ${userData.mobile}</p>
-                <p>Favorite Categories: ${userData.categories.join(', ')}</p>
-                <button id="logoutBtn">Logout</button>
-            `;
-
-            // Hide login/signup links
-            authLinks.style.display = 'none';
-
-            // Add logout event listener
-            document.getElementById('logoutBtn').addEventListener('click', () => {
-                signOut(auth).then(() => {
-                    window.location.reload(); // Refresh the page to update UI
-                }).catch(error => {
-                    console.error('Error logging out:', error);
-                });
-            });
-        } else {
-            // User is signed out
-            authLinks.style.display = 'block';
-            userInfo.innerHTML = '';
-        }
-    });
-
-    document.getElementById('loginLink').addEventListener('click', function() {
-        const currentPage = window.location.pathname;  // Get the current page (e.g., text-editor.html)
-        const textEditorContent = document.getElementById('textEditor').value;  // Get content of the text editor
-        
-        // Save the current page and text editor content to localStorage
-        localStorage.setItem('currentPage', currentPage);
-        localStorage.setItem('textEditorContent', textEditorContent);
-
-    });
-
-
-
-        // Update profile logic
-        document.getElementById('updateProfileBtn').addEventListener('click', async () => {
-            const name = document.getElementById('updateName').value;
-            const categories = document.getElementById('updateCategories').value.split(',');
-            const designation = document.getElementById('updateDesignation').value;
-            const age = document.getElementById('updateAge').value;
-            const mobile = document.getElementById('updateMobile').value;
-            const newPassword = document.getElementById('updatePassword').value;
-
-            const user = auth.currentUser;
-            const userDocRef = doc(db, 'users', user.uid);
-
-            if (newPassword) {
-                updatePassword(user, newPassword).then(() => {
-                    alert('Password updated successfully.');
-                }).catch(error => {
-                    console.error('Error updating password:', error);
-                    alert('Failed to update password.');
-                });
-            }
-
-            try {
-                await updateDoc(userDocRef, { name, categories, designation, age, mobile });
-                alert('Profile updated successfully!');
-            } catch (error) {
-                console.error('Error updating profile:', error);
-                alert('Failed to update profile.');
-            }
-        });
-
-
-    </script>
-
-
 </body>
 </html>

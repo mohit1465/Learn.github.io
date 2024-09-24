@@ -27,34 +27,7 @@ document.getElementById('save-as-file').addEventListener('click', saveAsFile);
 document.getElementById('file-input').addEventListener('change', handleFileOpen);
 document.getElementById('change-extension').addEventListener('click', changeExtension);
 document.getElementById('change-name').addEventListener('click', changeFileName);
-document.getElementById('metaMenu').addEventListener('click', togglemenu);
-
-function togglemenu(event) {
-    const menu = document.getElementById("menu-bar");
-    if (menu.style.display === 'none') {
-        menu.style.display = 'block';
-    } else {
-        menu.style.display = 'none';
-    }
-
-    event.stopPropagation();
-}
-
-document.addEventListener('click', function (event) {
-    const menu = document.getElementById("menu-bar");
-    const metaMenuButton = document.getElementById('metaMenu');
-
-    if (menu.style.display === 'block' && !menu.contains(event.target) && event.target !== metaMenuButton) {
-        menu.style.display = 'none';
-    }
-});
-
-document.querySelectorAll('.auth-link').forEach(link => {
-    link.addEventListener('click', function() {
-        const currentPage = window.location.pathname;  // Get the current page
-        localStorage.setItem('currentPage', currentPage);
-    });
-});
+document.getElementById('metaMenu').addEventListener('click', toggleMenu);
 
 editor.on('inputRead', function(instance, changeObj) {
     const cursor = editor.getCursor();
@@ -68,38 +41,6 @@ editor.on('inputRead', function(instance, changeObj) {
     }
 });
 
-export function addTab(name) {
-    const tabContainer = document.getElementById('tabs');
-    const tab = document.createElement('div');
-    tab.className = 'tab';
-    tab.id = name;
-    tab.textContent = name;
-
-    const closeBtn = document.createElement('span');
-    closeBtn.textContent = '×';
-    closeBtn.className = 'close-tab';
-    closeBtn.onclick = () => {
-        if (tabContainer.children.length > 1) {
-            if (confirm('Are you sure you want to close this tab?')) {
-                delete tabContents[tab.id];
-                tab.remove();
-                if (tab.classList.contains('active')) {
-                    tabContainer.children[0].click();
-                }
-            }
-        } else {
-            alert('At least one tab must be open.');
-        }
-    };
-
-    tab.appendChild(closeBtn);
-    tab.onclick = () => setActiveTab(tab);
-    tabContainer.appendChild(tab);
-    setActiveTab(tab); // Set this tab as active
-}
-
-window.addTab = addTab;
-
 function createNewFile(file_name) {
     let baseName = 'Untitled';
     let ext = 'txt';
@@ -112,6 +53,37 @@ function createNewFile(file_name) {
     }
 
     addTab(newName);
+}
+
+function addTab(name) {
+    const tabContainer = document.getElementById('tabs');
+    const tab = document.createElement('div');
+    tab.className = 'tab';
+    tab.id = name;
+    tab.textContent = name;
+
+    const closeBtn = document.createElement('span');
+    closeBtn.textContent = '×';
+    closeBtn.className = 'close-tab';
+    closeBtn.onclick = () => {
+        if (tabContainer.children.length > 1) {
+            if (confirm('Are you sure you want to close this tab?')) {
+                delete tabContents[tab.id]; // Remove content of closed tab
+                tab.remove();
+                if (tab.classList.contains('active')) {
+                    tabContainer.children[0].click();
+                }
+            }
+        } else {
+            alert('At least one tab must be open.');
+        }
+    };
+
+    tab.appendChild(closeBtn);
+    tab.onclick = () => setActiveTab(tab);
+
+    tabContainer.appendChild(tab);
+    setActiveTab(tab);
 }
 
 function setActiveTab(tab) {
@@ -300,6 +272,7 @@ function changeExtension() {
     }
 }
 
+
 function changeFileName() {
     const activeTab = document.querySelector('.tab.active');
     if (activeTab) {
@@ -339,30 +312,6 @@ function changeFileName() {
     }
 }
 
-
-function saveTabs() {
-    localStorage.setItem('tabsData', JSON.stringify(tabContents));
-}
-
-function loadTabs() {
-    const savedTabs = JSON.parse(localStorage.getItem('tabsData')) || {};
-    Object.keys(savedTabs).forEach(filename => {
-        addTab(filename);  
-        tabContents[filename] = savedTabs[filename];  
-        editor.setValue(tabContents[filename] || '');  
-    });
-}
-
-editor.on('change', () => {
-    const activeTab = document.querySelector('.tab.active');
-    if (activeTab) {
-        tabContents[activeTab.id] = editor.getValue();
-        saveTabs();
-    }
-});
-
-
-
 editor.on('cursorActivity', () => {
     const { line, ch } = editor.getCursor();
     document.getElementById('cursor-position').textContent = `Ln: ${line + 1}, Col: ${ch + 1}`;
@@ -382,5 +331,219 @@ function setTheme(theme) {
 window.onload = () => {
     addTab('Untitled.txt');
     setTheme('light');
-    loadTabs();
 };
+
+document.addEventListener("DOMContentLoaded", function() {
+    loadUserFiles(); // This ensures the function runs only after the DOM is ready
+});
+
+
+
+
+
+
+
+
+
+
+
+function toggleMenu() {
+    const profileInfo = document.getElementById('profileInfo');
+    
+    if (profileInfo.style.display === 'none' || profileInfo.style.display === '') {
+        profileInfo.style.display = 'block';
+    } else {
+        profileInfo.style.display = 'none';
+    }
+}
+
+// Hide profileInfo when clicking outside of it
+document.addEventListener('click', function(event) {
+    const profileInfo = document.getElementById('profileInfo');
+    const toggleBtn = document.getElementById('metaMenu');
+
+    // Check if the click is outside the profileInfo and toggle button
+    if (!profileInfo.contains(event.target) && !toggleBtn.contains(event.target)) {
+        profileInfo.style.display = 'none';
+    }
+});
+
+
+
+
+
+
+
+
+async function saveFileOnline() {
+    const user = auth.currentUser; // Get the current user
+
+    if (!user) {
+        alert("You must be logged in to save files.");
+        return;
+    }
+
+    // Prompt for file details
+    const fileName = prompt("Enter the file name:");
+    const fileID = prompt("Enter a unique file ID:");
+    const filePassword = prompt("Enter a password for the file:");
+
+    if (!fileName || !fileID || !filePassword) {
+        alert("Please provide a file name, unique file ID, and password.");
+        return;
+    }
+
+    const content = editor.getValue(); // Get content from your text editor
+
+    // Check if the fileID already exists for the user
+    const existingFile = await db.collection('files').doc(fileID).get();
+    if (existingFile.exists) {
+        alert("File ID already exists. Please choose a different ID.");
+        return;
+    }
+
+    // Save the file data to Firestore
+    await db.collection('files').doc(fileID).set({
+        content: content,
+        name: fileName,
+        password: filePassword,
+        userId: user.uid,
+        timestamp: new Date().toISOString()
+    });
+
+    alert("File saved successfully!");
+
+    loadUserFiles();
+}
+
+document.getElementById('save-online').addEventListener('click', saveFileOnline);
+
+
+
+async function loadFileOnline() {
+    const fileID = prompt("Enter the file ID:");
+    const filePassword = prompt("Enter the file password:");
+
+    if (!fileID || !filePassword) {
+        alert("Please provide both file ID and password.");
+        return;
+    }
+
+    const fileDoc = await db.collection('files').doc(fileID).get();
+
+    if (!fileDoc.exists) {
+        alert("No file found with this ID.");
+        return;
+    }
+
+    const fileData = fileDoc.data();
+
+    if (fileData.password !== filePassword) {
+        alert("Incorrect password. Access denied.");
+        return;
+    }
+
+    loadFileIntoTab(fileData.name, fileData.content);
+    alert("File loaded successfully!");
+}
+
+
+function loadFileIntoTab(fileName, fileContents) {
+    console.log(`Loading file: ${fileName}`);
+    console.log(`File content: ${fileContents}`); // Log the content to check
+    
+    addTab(fileName);
+    editor.setValue(fileContents);
+    tabContents[currentTabId] = fileContents;
+}
+
+
+
+
+document.getElementById('load-file').addEventListener('click', loadFileOnline);
+
+
+
+
+
+async function loadUserFiles() {
+    const user = auth.currentUser;
+
+    if (!user) {
+        console.log("You must be logged in to load files.");
+        return;
+    }
+
+    const userFilesContainer = document.getElementById('users-files');
+    userFilesContainer.innerHTML = ''; // Clear previous files
+
+    const filesSnapshot = await db.collection('files').where('userId', '==', user.uid).get();
+
+    if (filesSnapshot.empty) {
+        userFilesContainer.innerHTML = '<p>No files found.</p>';
+        return;
+    }
+
+    filesSnapshot.forEach(doc => {
+        const fileData = doc.data();
+        const fileID = doc.id;
+
+        // Create a file entry
+        const fileElement = document.createElement('div');
+        fileElement.textContent = fileData.name;
+        fileElement.className = 'file-entry';
+        fileElement.onclick = () => loadFileIntoTab(fileData.name, fileData.content, fileID);
+
+        userFilesContainer.appendChild(fileElement);
+    });
+}
+
+
+
+
+auth.onAuthStateChanged(user => {
+    if (user) {
+        // Fetch the user document from Firestore
+        db.collection('users').doc(user.uid).get().then(doc => {
+            if (doc.exists) {
+                // If the document exists, extract the user data
+                const userData = doc.data();
+                // Update the profile information on the page
+                document.getElementById('profileInfo').innerHTML = `
+                    <h2>${userData.name}</h2>
+                    <p>Email: ${userData.email}</p>
+                    <button onclick="logoutUser()">Logout</button>
+                    <div id='users-files'></div>`; // 'users-files' div added here
+
+                // Now that the 'users-files' div exists, call loadUserFiles()
+                loadUserFiles(); // Load user's files here
+            } else {
+                // If the document does not exist, show an error message
+                document.getElementById('profileInfo').innerHTML = `
+                    <h2>No user data found</h2>
+                    <p>Please complete your profile.</p>
+                    <button onclick="logoutUser()">Logout</button>`;
+            }
+        }).catch(error => {
+            console.error('Error fetching user data:', error);
+            alert('Error fetching user data.');
+        });
+    } else {
+        // If the document does not exist, show an error message
+        document.getElementById('profileInfo').innerHTML = `
+            <h2>No user data found</h2>
+            <p>Please login</p>
+            <a href='login.html'>Login | Signup</a>`;
+    }
+});
+
+  
+  // Logout function
+  function logoutUser() {
+    auth.signOut().then(() => {
+      alert("Logged out successfully!");
+    });
+  }
+  
+
+

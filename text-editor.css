@@ -11,10 +11,10 @@ header, footer {
     background-color: transparent;
     color: white;
     text-align: center;
-    position: fixed;
     padding-top: 10px;
     padding-bottom: 10px;
     padding-right: 10px;
+    position: fixed;
     width: 100%;
     z-index: 1000;
     display: flex;
@@ -209,12 +209,13 @@ footer {
     border: 1px solid transparent;  /* creates padding around scroll thumb */
 }
 
+
 #metaMenu{
     text-decoration: none;
     color: #ffffff;
 }
 
-.menu-bar{
+#profileInfo{
     position: absolute;
     border-radius: 50px;
     border-top-right-radius: 0px;
