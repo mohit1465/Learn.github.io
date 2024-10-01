@@ -8,6 +8,7 @@ body, html {
 }
 
 header, footer {
+    cursor: pointer;
     background-color: transparent;
     color: white;
     text-align: center;
@@ -216,6 +217,7 @@ footer {
 }
 
 #profileInfo{
+    display: none;
     position: absolute;
     border-radius: 50px;
     border-top-right-radius: 0px;

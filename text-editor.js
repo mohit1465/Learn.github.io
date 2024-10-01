@@ -1,5 +1,5 @@
 let currentTabId = 'Untitled.txt';
-let currentFileHandle = null; // This variable will store the current file handle
+let currentFileHandle = null;
 
 const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
     lineNumbers: true,
@@ -13,7 +13,7 @@ const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
         },
         "Ctrl-F": "findPersistent"
     },
-    hintOptions: { // Enable autocomplete
+    hintOptions: {
         completeSingle: false
     }
 });
@@ -65,13 +65,18 @@ function addTab(name) {
     const closeBtn = document.createElement('span');
     closeBtn.textContent = '×';
     closeBtn.className = 'close-tab';
-    closeBtn.onclick = () => {
+    closeBtn.onclick = (event) => {
+        event.stopPropagation(); // Prevent the tab's click event from firing
         if (tabContainer.children.length > 1) {
             if (confirm('Are you sure you want to close this tab?')) {
-                delete tabContents[tab.id]; // Remove content of closed tab
+                delete tabContents[tab.id];
                 tab.remove();
+                
                 if (tab.classList.contains('active')) {
-                    tabContainer.children[0].click();
+                    const remainingTabs = tabContainer.children;
+                    if (remainingTabs.length > 0) {
+                        remainingTabs[0].click(); // Activate the first remaining tab
+                    }
                 }
             }
         } else {
@@ -98,6 +103,27 @@ function setActiveTab(tab) {
     editor.setValue(tabContents[currentTabId] || '');
     updateSuggestions(currentTabId);
 }
+
+function createCloseButton(tab) {
+    const closeBtn = document.createElement('span');
+    closeBtn.textContent = '×';
+    closeBtn.className = 'close-tab';
+    closeBtn.onclick = () => {
+        if (document.querySelectorAll('.tab').length > 1) {
+            if (confirm('Are you sure you want to close this tab?')) {
+                delete tabContents[tab.id];
+                tab.remove();
+                if (tab.classList.contains('active')) {
+                    document.querySelector('.tab').click(); // Activate first tab
+                }
+            }
+        } else {
+            alert('At least one tab must be open.');
+        }
+    };
+    return closeBtn;
+}
+
 
 function updateSuggestions(filename) {
     const extension = filename.split('.').pop();
@@ -153,10 +179,8 @@ async function saveFile() {
 }
 
 async function saveAsFile() {
-    // Get the current tab's name or provide a default name
     const defaultFileName = currentTabId || 'Untitled.txt';
     
-    // Prepare file options with a suggested file name
     const options = {
         suggestedName: defaultFileName,
         types: [{
@@ -166,50 +190,27 @@ async function saveAsFile() {
     };
 
     try {
-        // Show the Save File Picker dialog
         const fileHandle = await window.showSaveFilePicker(options);
         const newFileName = fileHandle.name;
 
-        // If the file name changes, update the tab and content
-        if (currentFileHandle) {
-            const existingTab = document.getElementById(currentTabId);
-            if (existingTab) {
-                existingTab.id = newFileName;
-                existingTab.textContent = newFileName;
+        // Preserve the content when saving as a new file
+        const content = tabContents[currentTabId];
+        tabContents[newFileName] = content; // Store content under the new file name
 
-                // Ensure the close button is present
-                const closeBtn = existingTab.querySelector('.close-tab');
-                if (!closeBtn) {
-                    const newCloseBtn = document.createElement('span');
-                    newCloseBtn.textContent = '×';
-                    newCloseBtn.className = 'close-tab';
-                    newCloseBtn.onclick = () => {
-                        if (document.querySelectorAll('.tab').length > 1) {
-                            if (confirm('Are you sure you want to close this tab?')) {
-                                delete tabContents[existingTab.id]; // Remove content of closed tab
-                                existingTab.remove();
-                                if (existingTab.classList.contains('active')) {
-                                    document.querySelector('.tab').click(); // Activate first tab
-                                }
-                            }
-                        } else {
-                            alert('At least one tab must be open.');
-                        }
-                    };
-                    existingTab.appendChild(newCloseBtn);
-                }
+        const existingTab = document.getElementById(currentTabId);
+        if (existingTab) {
+            existingTab.id = newFileName; // Update the tab ID
+            existingTab.textContent = newFileName; // Update the tab name
 
-                // Update the tab contents and name
-                tabContents[newFileName] = editor.getValue();
-                delete tabContents[currentTabId];
-                currentTabId = newFileName;
-                editor.setValue(tabContents[currentTabId] || '');
+            const closeBtn = existingTab.querySelector('.close-tab');
+            if (!closeBtn) {
+                const newCloseBtn = createCloseButton(existingTab); // Create close button
+                existingTab.appendChild(newCloseBtn);
             }
         }
 
-        // Update the file handle and save the file
-        currentFileHandle = fileHandle;
-        await saveFile();
+        currentFileHandle = fileHandle; // Update the current file handle
+        await saveFile(); // Call the function to save the file
     } catch (err) {
         console.error('Error saving file:', err);
     }
@@ -238,40 +239,25 @@ function changeExtension() {
         const newExtension = prompt('Enter the new file extension (e.g., js, txt, html):');
         if (newExtension) {
             const nameParts = activeTab.id.split('.');
-            nameParts.pop(); // Remove the old extension
+            nameParts.pop(); // Remove the current extension
             nameParts.push(newExtension); // Add the new extension
             const newId = nameParts.join('.');
 
-            tabContents[newId] = tabContents[activeTab.id];
-            delete tabContents[activeTab.id];
+            // Preserve the content during the rename
+            const content = tabContents[activeTab.id];
+            tabContents[newId] = content; // Store content under the new ID
+            delete tabContents[activeTab.id]; // Remove the old ID
 
-            activeTab.id = newId;
-            activeTab.textContent = newId;
+            activeTab.id = newId; // Update the tab ID
+            activeTab.textContent = newId; // Update the tab name
 
-            // Ensure the close button is reattached
-            const closeBtn = document.createElement('span');
-            closeBtn.textContent = '×';
-            closeBtn.className = 'close-tab';
-            closeBtn.onclick = () => {
-                if (document.querySelectorAll('.tab').length > 1) {
-                    if (confirm('Are you sure you want to close this tab?')) {
-                        delete tabContents[activeTab.id]; // Remove content of closed tab
-                        activeTab.remove();
-                        if (activeTab.classList.contains('active')) {
-                            document.querySelector('.tab').click(); // Activate first tab
-                        }
-                    }
-                } else {
-                    alert('At least one tab must be open.');
-                }
-            };
+            const closeBtn = createCloseButton(activeTab); // Create close button
             activeTab.appendChild(closeBtn);
-
-            updateSuggestions(newId);
+            updateSuggestions(newId); // Update suggestions with the new ID
+            setActiveTab(activeTab); // Activate the updated tab
         }
     }
 }
-
 
 function changeFileName() {
     const activeTab = document.querySelector('.tab.active');
@@ -282,35 +268,22 @@ function changeFileName() {
             nameParts[0] = newName; // Update the file name part
             const newId = nameParts.join('.');
 
-            tabContents[newId] = tabContents[activeTab.id];
-            delete tabContents[activeTab.id];
+            // Preserve the content during the rename
+            const content = tabContents[activeTab.id];
+            tabContents[newId] = content; // Store content under the new ID
+            delete tabContents[activeTab.id]; // Remove the old ID
 
-            activeTab.id = newId;
-            activeTab.textContent = newId;
+            activeTab.id = newId; // Update the tab ID
+            activeTab.textContent = newId; // Update the tab name
 
-            // Ensure the close button is reattached
-            const closeBtn = document.createElement('span');
-            closeBtn.textContent = '×';
-            closeBtn.className = 'close-tab';
-            closeBtn.onclick = () => {
-                if (document.querySelectorAll('.tab').length > 1) {
-                    if (confirm('Are you sure you want to close this tab?')) {
-                        delete tabContents[activeTab.id]; // Remove content of closed tab
-                        activeTab.remove();
-                        if (activeTab.classList.contains('active')) {
-                            document.querySelector('.tab').click(); // Activate first tab
-                        }
-                    }
-                } else {
-                    alert('At least one tab must be open.');
-                }
-            };
+            const closeBtn = createCloseButton(activeTab); // Create close button
             activeTab.appendChild(closeBtn);
-
-            updateSuggestions(newId);
+            updateSuggestions(newId); // Update suggestions with the new ID
+            setActiveTab(activeTab); // Activate the updated tab
         }
     }
 }
+
 
 editor.on('cursorActivity', () => {
     const { line, ch } = editor.getCursor();
@@ -334,18 +307,8 @@ window.onload = () => {
 };
 
 document.addEventListener("DOMContentLoaded", function() {
-    loadUserFiles(); // This ensures the function runs only after the DOM is ready
+    loadUserFiles();
 });
-
-
-
-
-
-
-
-
-
-
 
 function toggleMenu() {
     const profileInfo = document.getElementById('profileInfo');
@@ -357,33 +320,23 @@ function toggleMenu() {
     }
 }
 
-// Hide profileInfo when clicking outside of it
 document.addEventListener('click', function(event) {
     const profileInfo = document.getElementById('profileInfo');
     const toggleBtn = document.getElementById('metaMenu');
 
-    // Check if the click is outside the profileInfo and toggle button
     if (!profileInfo.contains(event.target) && !toggleBtn.contains(event.target)) {
         profileInfo.style.display = 'none';
     }
 });
 
-
-
-
-
-
-
-
 async function saveFileOnline() {
-    const user = auth.currentUser; // Get the current user
+    const user = auth.currentUser;
 
     if (!user) {
         alert("You must be logged in to save files.");
         return;
     }
 
-    // Prompt for file details
     const fileName = prompt("Enter the file name:");
     const fileID = prompt("Enter a unique file ID:");
     const filePassword = prompt("Enter a password for the file:");
@@ -393,16 +346,14 @@ async function saveFileOnline() {
         return;
     }
 
-    const content = editor.getValue(); // Get content from your text editor
+    const content = editor.getValue();
 
-    // Check if the fileID already exists for the user
     const existingFile = await db.collection('files').doc(fileID).get();
     if (existingFile.exists) {
         alert("File ID already exists. Please choose a different ID.");
         return;
     }
 
-    // Save the file data to Firestore
     await db.collection('files').doc(fileID).set({
         content: content,
         name: fileName,
@@ -415,10 +366,7 @@ async function saveFileOnline() {
 
     loadUserFiles();
 }
-
 document.getElementById('save-online').addEventListener('click', saveFileOnline);
-
-
 
 async function loadFileOnline() {
     const fileID = prompt("Enter the file ID:");
@@ -447,23 +395,12 @@ async function loadFileOnline() {
     alert("File loaded successfully!");
 }
 
-
-function loadFileIntoTab(fileName, fileContents) {
-    console.log(`Loading file: ${fileName}`);
-    console.log(`File content: ${fileContents}`); // Log the content to check
-    
+function loadFileIntoTab(fileName, fileContents) {    
     addTab(fileName);
     editor.setValue(fileContents);
     tabContents[currentTabId] = fileContents;
 }
-
-
-
-
 document.getElementById('load-file').addEventListener('click', loadFileOnline);
-
-
-
 
 
 async function loadUserFiles() {
@@ -475,7 +412,7 @@ async function loadUserFiles() {
     }
 
     const userFilesContainer = document.getElementById('users-files');
-    userFilesContainer.innerHTML = ''; // Clear previous files
+    userFilesContainer.innerHTML = '';
 
     const filesSnapshot = await db.collection('files').where('userId', '==', user.uid).get();
 
@@ -488,7 +425,6 @@ async function loadUserFiles() {
         const fileData = doc.data();
         const fileID = doc.id;
 
-        // Create a file entry
         const fileElement = document.createElement('div');
         fileElement.textContent = fileData.name;
         fileElement.className = 'file-entry';
@@ -498,27 +434,19 @@ async function loadUserFiles() {
     });
 }
 
-
-
-
 auth.onAuthStateChanged(user => {
     if (user) {
-        // Fetch the user document from Firestore
         db.collection('users').doc(user.uid).get().then(doc => {
             if (doc.exists) {
-                // If the document exists, extract the user data
                 const userData = doc.data();
-                // Update the profile information on the page
                 document.getElementById('profileInfo').innerHTML = `
                     <h2>${userData.name}</h2>
                     <p>Email: ${userData.email}</p>
                     <button onclick="logoutUser()">Logout</button>
-                    <div id='users-files'></div>`; // 'users-files' div added here
+                    <div id='users-files'></div>`;
 
-                // Now that the 'users-files' div exists, call loadUserFiles()
-                loadUserFiles(); // Load user's files here
+                loadUserFiles();
             } else {
-                // If the document does not exist, show an error message
                 document.getElementById('profileInfo').innerHTML = `
                     <h2>No user data found</h2>
                     <p>Please complete your profile.</p>
@@ -529,7 +457,6 @@ auth.onAuthStateChanged(user => {
             alert('Error fetching user data.');
         });
     } else {
-        // If the document does not exist, show an error message
         document.getElementById('profileInfo').innerHTML = `
             <h2>No user data found</h2>
             <p>Please login</p>
@@ -537,13 +464,26 @@ auth.onAuthStateChanged(user => {
     }
 });
 
-  
-  // Logout function
-  function logoutUser() {
+function logoutUser() {
     auth.signOut().then(() => {
-      alert("Logged out successfully!");
+    alert("Logged out successfully!");
     });
-  }
-  
+}
 
+document.addEventListener('DOMContentLoaded', function() {
+    const fileName = localStorage.getItem('selectedFileName');
+    const fileContents = localStorage.getItem('selectedFileContent');
+
+    if (fileName) {
+        if (fileContents !== null) {
+            loadFileIntoTab(fileName, fileContents);
+        } else {
+            loadFileIntoTab(fileName, '');
+        }
+        localStorage.removeItem('selectedFileName');
+        localStorage.removeItem('selectedFileContent');
+    } else {
+        console.log("No file selected.");
+    }
+});
 

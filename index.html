@@ -1,26 +1,100 @@
 <!DOCTYPE html>
     <html lang="en">
     <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Main Page</title>
-      <link rel="stylesheet" href="style.css">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Main Page</title>
+        <link href='https://fonts.googleapis.com/css?family=Pacifico' rel='stylesheet'>
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto|Open+Sans">
+        <link rel="stylesheet" href="style.css">
     </head>
     <body>
-      <h1>Welcome to the Website</h1>
-      <div id="profileInfo"></div>
+        <div class="container">
+            <nav class="left-nav-bar">
+                <section id="left-menu">
+                    <div id="logo-box">
+                        <img src="logo.png" alt="DotOne">
+                        <h1 id='logo-name'>Dot<span>One</span></h1>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-toggle">
+                        <span class="slider round"></span>
+                    </label>
+                    <br>
+                    <br>
+                    <hr>
+                    <ul id="side-bar-options">
+                        <li id="auth-check-option" onclick="window.location.href = 'login.html'">Login</li><br>
+                        <li class="navlink2" onclick="location.href = 'text-editor.html'">Text Editor</li><br>
+                        <li class="navlink3" onclick="showSection('setting')">Setting</li><br>
+                        <li class="navlink4" onclick="showSection('whatsNew')">Contact Us</li>
+                    </ul>
+                </section>
+            </nav>
     
-      <a href="text-editor.html">Text Editor</a>
+            <main class="main-content">
+                <section class="top-section">
+                    <div class="top-left-section">
+                        <div id="dashboard-btn" onclick="showSection('dashboard')">Dashboard</div>
+                        <div id="setting-btn" onclick="showSection('setting')">Setting</div>
+                    </div>
+                    <div class="top-right-section">
+                        <div id="whatsNew-btn" onclick="showSection('whatsNew')">What's New</div>
+                    </div>            
+                </section>
+    
+                <div id="dashboard">
+                    <div id="user-profile">
+                        <img src="user-profile.png" alt="U">
+                        <div id="user-name-email">
+                            <span id='userData'></span><span id="edit-btn">Edit</span>
+                            <p id='userEmail'></p>
+                        </div>
+                    </div>
+                    <div id="update">
+                        <img src="update-icon.png" alt="Updates">
+                        <div id="update-dot"></div>
+                    </div>
+                    
 
-      <!-- Firebase JS SDKs (Compat mode) -->
-      <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-      <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
-      <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
-      
-      <!-- Firebase config -->
-      <script src="firebase-config.js"></script>
-      
-      <!-- Main script -->
-      <script src="main.js"></script>
+
+
+                    <div class="container2">
+                        <div class="box box1">
+                            <h3>Box 1</h3>
+                            <p>Some content here...</p>
+                        </div>
+                        <div class="box box2">
+                            <div id='users-files' class="users-files"></div>
+                        </div>
+                        <div class="box box3">
+                            <h3>Box 3</h3>
+                            <p>Some content here...</p>
+                        </div>
+                        <div class="box box4">
+                            <h3>Box 4</h3>
+                            <p>Some content here...</p>
+                        </div>
+                    </div>
+
+
+
+                </div>
+                <div id="setting" style="display:none;">Hello, Setting</div>
+                <div id="whatsNew" style="display:none;">Hello, What's New</div>
+                </div>
+                
+            </main>
+        </div>
+    
+    
+        <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+        <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+        
+        <script src="firebase-config.js"></script>
+        
+        <script src="main.js"></script>
     </body>
     </html>
