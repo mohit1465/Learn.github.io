@@ -18,14 +18,14 @@
                         <h1 id='logo-name'>Dot<span>One</span></h1>
                     </div>
                     <label class="switch">
-                        <input type="checkbox" id="theme-toggle">
+                        <input type="checkbox" class="theme-toggle">
                         <span class="slider round"></span>
-                    </label>
+                    </label>  
                     <br>
                     <br>
                     <hr>
                     <ul id="side-bar-options">
-                        <li id="auth-check-option" onclick="window.location.href = 'login.html'">Login</li><br>
+                        <li id="auth-check-option" onclick="redirectToLogin()">Login</li><br>
                         <li class="navlink2" onclick="location.href = 'text-editor.html'">Text Editor</li><br>
                         <li class="navlink3" onclick="showSection('setting')">Setting</li><br>
                         <li class="navlink4" onclick="showSection('whatsNew')">Contact Us</li>
@@ -81,8 +81,14 @@
 
 
                 </div>
-                <div id="setting" style="display:none;">Hello, Setting</div>
-                <div id="whatsNew" style="display:none;">Hello, What's New</div>
+                <div id="setting" style="display:none;">
+                    <h3>Switch Theme : </h3>
+                    <label class="switch">
+                        <input type="checkbox" class="theme-toggle">
+                        <span class="slider round"></span>
+                    </label>           
+                </div>
+                <div id="whatsNew" style="display:none;">Hello, what's new</div>
                 </div>
                 
             </main>

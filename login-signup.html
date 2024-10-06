@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="login-signup.css">
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+  <title>Login / Signup | Join Us</title>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-box">
+      <div id="login-form">
+        <h2>Welcome Back!</h2>
+        <p class="tagline">We missed you! Let’s get you back in to explore amazing things.</p>
+        <form id="loginForm">
+          <div class="input-container">
+            <input type="email" id="loginEmail" placeholder="Your Awesome Email" required>
+          </div>
+          <div class="input-container">
+            <input type="password" id="loginPassword" placeholder="Super Secret Password" required>
+          </div>
+          <button type="submit" class="login-btn">Let’s Go 🚀</button>
+        </form>
+        <p class="switch-text">First time here? <a href="#" id="switchToSignup">Create an Account</a></p>
+      </div>
+      
+      <div id="signup-form" class="hidden">
+        <h2>Join Us!</h2>
+        <p class="tagline">Be part of something amazing. Your journey starts here.</p>
+        <form id="signupForm">
+          <div class="input-container">
+            <input type="text" id="signupName" placeholder="Your Full Name" required>
+          </div>
+          <div class="input-container">
+            <input type="email" id="signupEmail" placeholder="Your Email" required>
+          </div>
+          <div class="input-container">
+            <input type="password" id="signupPassword" placeholder="Choose a Password" required>
+          </div>
+          <button type="submit" class="signup-btn">Join the Adventure 🎉</button>
+        </form>
+        <p class="switch-text">Already have an account? <a href="#" id="switchToLogin">Login Here</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+
+  <script src="firebase-config.js"></script>
+  <script src="auth.js"></script>
+  <!-- <script src="switch.js"></script> -->
+</body>
+</html>

@@ -29,24 +29,37 @@ function logoutUser() {
   });
 }
 
+function redirectToLogin() {
+    const pageName = window.location.pathname.split("/").pop();
+    localStorage.setItem('lastPage', pageName);
+    window.location.href = 'login-signup.html';
+}
 
+const toggles = document.querySelectorAll('.theme-toggle');
 
-const toggle = document.getElementById('theme-toggle');
-toggle.addEventListener('change', function() {
-    if (this.checked) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-        document.documentElement.setAttribute('data-theme', 'light');
-    }
+const currentTheme = localStorage.getItem('theme') || 'light';
+document.documentElement.setAttribute('data-theme', currentTheme);
+
+toggles.forEach(toggle => {
+    toggle.checked = currentTheme === 'dark';
+    toggle.addEventListener('change', function() {
+        const theme = this.checked ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+
+        toggles.forEach(t => t.checked = theme === 'dark');
+    });
 });
 
-
+window.onload = function() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    toggle.checked = (savedTheme === 'dark');
+};
 
 window.onload = function() {
     showSection('dashboard');
 };
-
-
 
 function showSection(section) {
     document.getElementById('dashboard').style.display = 'none';
@@ -68,8 +81,6 @@ function showSection(section) {
     }
 }
 
-
-
 async function loadUserFiles() {
     const user = auth.currentUser;
 
@@ -77,17 +88,13 @@ async function loadUserFiles() {
         console.log("You must be logged in to load files.");
         return;
     }
-
     const userFilesContainer = document.getElementById('users-files');
-
-    // Clear any existing content
     userFilesContainer.innerHTML = `
         <div class="header">
             <h2>Text Editor Files</h2>
             <span class="file-count">Loading...</span>
         </div>
     `;
-
     const filesSnapshot = await db.collection('files').where('userId', '==', user.uid).get();
 
     if (filesSnapshot.empty) {
@@ -121,7 +128,7 @@ async function loadUserFiles() {
 
             userFilesContainer.appendChild(fileElement);
         }
-        fileCounter++;  // Increment the file count
+        fileCounter++;
     });
 }
 

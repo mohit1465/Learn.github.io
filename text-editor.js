@@ -1,5 +1,5 @@
 let currentTabId = 'Untitled.txt';
-let currentFileHandle = null;
+let currentFileHandle = null; // This variable will store the current file handle
 
 const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
     lineNumbers: true,
@@ -13,7 +13,7 @@ const editor = CodeMirror.fromTextArea(document.getElementById('editor'), {
         },
         "Ctrl-F": "findPersistent"
     },
-    hintOptions: {
+    hintOptions: { // Enable autocomplete
         completeSingle: false
     }
 });
@@ -28,6 +28,8 @@ document.getElementById('file-input').addEventListener('change', handleFileOpen)
 document.getElementById('change-extension').addEventListener('click', changeExtension);
 document.getElementById('change-name').addEventListener('click', changeFileName);
 document.getElementById('metaMenu').addEventListener('click', toggleMenu);
+document.getElementById('save-online').addEventListener('click', saveFileOnline);
+document.getElementById('load-file').addEventListener('click', loadFileOnline);
 
 editor.on('inputRead', function(instance, changeObj) {
     const cursor = editor.getCursor();
@@ -124,7 +126,6 @@ function createCloseButton(tab) {
     return closeBtn;
 }
 
-
 function updateSuggestions(filename) {
     const extension = filename.split('.').pop();
     const suggestionContainer = document.querySelector('.suggestions');
@@ -179,8 +180,10 @@ async function saveFile() {
 }
 
 async function saveAsFile() {
+    // Get the current tab's name or provide a default name
     const defaultFileName = currentTabId || 'Untitled.txt';
     
+    // Prepare file options with a suggested file name
     const options = {
         suggestedName: defaultFileName,
         types: [{
@@ -190,27 +193,50 @@ async function saveAsFile() {
     };
 
     try {
+        // Show the Save File Picker dialog
         const fileHandle = await window.showSaveFilePicker(options);
         const newFileName = fileHandle.name;
 
-        // Preserve the content when saving as a new file
-        const content = tabContents[currentTabId];
-        tabContents[newFileName] = content; // Store content under the new file name
+        // If the file name changes, update the tab and content
+        if (currentFileHandle) {
+            const existingTab = document.getElementById(currentTabId);
+            if (existingTab) {
+                existingTab.id = newFileName;
+                existingTab.textContent = newFileName;
 
-        const existingTab = document.getElementById(currentTabId);
-        if (existingTab) {
-            existingTab.id = newFileName; // Update the tab ID
-            existingTab.textContent = newFileName; // Update the tab name
+                // Ensure the close button is present
+                const closeBtn = existingTab.querySelector('.close-tab');
+                if (!closeBtn) {
+                    const newCloseBtn = document.createElement('span');
+                    newCloseBtn.textContent = '×';
+                    newCloseBtn.className = 'close-tab';
+                    newCloseBtn.onclick = () => {
+                        if (document.querySelectorAll('.tab').length > 1) {
+                            if (confirm('Are you sure you want to close this tab?')) {
+                                delete tabContents[existingTab.id]; // Remove content of closed tab
+                                existingTab.remove();
+                                if (existingTab.classList.contains('active')) {
+                                    document.querySelector('.tab').click(); // Activate first tab
+                                }
+                            }
+                        } else {
+                            alert('At least one tab must be open.');
+                        }
+                    };
+                    existingTab.appendChild(newCloseBtn);
+                }
 
-            const closeBtn = existingTab.querySelector('.close-tab');
-            if (!closeBtn) {
-                const newCloseBtn = createCloseButton(existingTab); // Create close button
-                existingTab.appendChild(newCloseBtn);
+                // Update the tab contents and name
+                tabContents[newFileName] = editor.getValue();
+                delete tabContents[currentTabId];
+                currentTabId = newFileName;
+                editor.setValue(tabContents[currentTabId] || '');
             }
         }
 
-        currentFileHandle = fileHandle; // Update the current file handle
-        await saveFile(); // Call the function to save the file
+        // Update the file handle and save the file
+        currentFileHandle = fileHandle;
+        await saveFile();
     } catch (err) {
         console.error('Error saving file:', err);
     }
@@ -233,31 +259,47 @@ async function handleFileOpen() {
     }
 }
 
+
 function changeExtension() {
     const activeTab = document.querySelector('.tab.active');
     if (activeTab) {
         const newExtension = prompt('Enter the new file extension (e.g., js, txt, html):');
         if (newExtension) {
             const nameParts = activeTab.id.split('.');
-            nameParts.pop(); // Remove the current extension
+            nameParts.pop(); // Remove the old extension
             nameParts.push(newExtension); // Add the new extension
             const newId = nameParts.join('.');
 
-            // Preserve the content during the rename
-            const content = tabContents[activeTab.id];
-            tabContents[newId] = content; // Store content under the new ID
-            delete tabContents[activeTab.id]; // Remove the old ID
+            tabContents[newId] = tabContents[activeTab.id];
+            delete tabContents[activeTab.id];
 
-            activeTab.id = newId; // Update the tab ID
-            activeTab.textContent = newId; // Update the tab name
+            activeTab.id = newId;
+            activeTab.textContent = newId;
 
-            const closeBtn = createCloseButton(activeTab); // Create close button
+            // Ensure the close button is reattached
+            const closeBtn = document.createElement('span');
+            closeBtn.textContent = '×';
+            closeBtn.className = 'close-tab';
+            closeBtn.onclick = () => {
+                if (document.querySelectorAll('.tab').length > 1) {
+                    if (confirm('Are you sure you want to close this tab?')) {
+                        delete tabContents[activeTab.id]; // Remove content of closed tab
+                        activeTab.remove();
+                        if (activeTab.classList.contains('active')) {
+                            document.querySelector('.tab').click(); // Activate first tab
+                        }
+                    }
+                } else {
+                    alert('At least one tab must be open.');
+                }
+            };
             activeTab.appendChild(closeBtn);
-            updateSuggestions(newId); // Update suggestions with the new ID
-            setActiveTab(activeTab); // Activate the updated tab
+
+            updateSuggestions(newId);
         }
     }
 }
+
 
 function changeFileName() {
     const activeTab = document.querySelector('.tab.active');
@@ -268,18 +310,32 @@ function changeFileName() {
             nameParts[0] = newName; // Update the file name part
             const newId = nameParts.join('.');
 
-            // Preserve the content during the rename
-            const content = tabContents[activeTab.id];
-            tabContents[newId] = content; // Store content under the new ID
-            delete tabContents[activeTab.id]; // Remove the old ID
+            tabContents[newId] = tabContents[activeTab.id];
+            delete tabContents[activeTab.id];
 
-            activeTab.id = newId; // Update the tab ID
-            activeTab.textContent = newId; // Update the tab name
+            activeTab.id = newId;
+            activeTab.textContent = newId;
 
-            const closeBtn = createCloseButton(activeTab); // Create close button
+            // Ensure the close button is reattached
+            const closeBtn = document.createElement('span');
+            closeBtn.textContent = '×';
+            closeBtn.className = 'close-tab';
+            closeBtn.onclick = () => {
+                if (document.querySelectorAll('.tab').length > 1) {
+                    if (confirm('Are you sure you want to close this tab?')) {
+                        delete tabContents[activeTab.id]; // Remove content of closed tab
+                        activeTab.remove();
+                        if (activeTab.classList.contains('active')) {
+                            document.querySelector('.tab').click(); // Activate first tab
+                        }
+                    }
+                } else {
+                    alert('At least one tab must be open.');
+                }
+            };
             activeTab.appendChild(closeBtn);
-            updateSuggestions(newId); // Update suggestions with the new ID
-            setActiveTab(activeTab); // Activate the updated tab
+
+            updateSuggestions(newId);
         }
     }
 }
@@ -299,16 +355,64 @@ editor.on('change', () => {
 function setTheme(theme) {
     document.body.className = theme;
     editor.setOption('theme', theme === 'light' ? 'default' : 'dracula');
+    localStorage.setItem('theme', theme);
 }
-
-window.onload = () => {
-    addTab('Untitled.txt');
-    setTheme('light');
-};
 
 document.addEventListener("DOMContentLoaded", function() {
     loadUserFiles();
 });
+
+
+
+
+
+
+
+
+
+
+window.onload = () => {
+    addTab('Untitled.txt');
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+};
+
+function redirectToLogin() {
+    const pageName = window.location.pathname.split("/").pop();
+    localStorage.setItem('lastPage', pageName);
+    allData();
+                                                               
+    window.location.href = 'login-signup.html';
+}
+
+
+
+// function allData() {
+//     const tabs = document.querySelectorAll('.tab');
+//     let allFilesData = [];
+//     const content = editor.getValue();
+
+//     alert(`content:${content}`);
+
+//     return allFilesData;
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function toggleMenu() {
     const profileInfo = document.getElementById('profileInfo');
@@ -366,7 +470,6 @@ async function saveFileOnline() {
 
     loadUserFiles();
 }
-document.getElementById('save-online').addEventListener('click', saveFileOnline);
 
 async function loadFileOnline() {
     const fileID = prompt("Enter the file ID:");
@@ -400,7 +503,6 @@ function loadFileIntoTab(fileName, fileContents) {
     editor.setValue(fileContents);
     tabContents[currentTabId] = fileContents;
 }
-document.getElementById('load-file').addEventListener('click', loadFileOnline);
 
 
 async function loadUserFiles() {
@@ -460,7 +562,7 @@ auth.onAuthStateChanged(user => {
         document.getElementById('profileInfo').innerHTML = `
             <h2>No user data found</h2>
             <p>Please login</p>
-            <a href='login.html'>Login | Signup</a>`;
+            <a onclick="redirectToLogin()">Login | Signup</a>`;
     }
 });
 
