@@ -380,11 +380,11 @@ window.onload = () => {
 function redirectToLogin() {
     const pageName = window.location.pathname.split("/").pop();
     localStorage.setItem('lastPage', pageName);
-    allData();
-                                                               
-    window.location.href = 'login-signup.html';
+    const confirmation = confirm("Before you Leave must save your files locally.")
+    if (confirmation) {
+        window.location.href = 'login-signup.html';
+    }
 }
-
 
 
 // function allData() {
