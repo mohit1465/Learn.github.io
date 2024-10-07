@@ -13,7 +13,7 @@
         <div class="container">
             <nav class="left-nav-bar">
                 <section id="left-menu">
-                    <div id="logo-box">
+                    <div id="logo-box" onclick="redirectToLogin()">
                         <img src="logo.png" alt="DotOne">
                         <h1 id='logo-name'>Dot<span>One</span></h1>
                     </div>
@@ -32,6 +32,41 @@
                     </ul>
                 </section>
             </nav>
+
+
+            <div id="topNav">
+                <a id="menu-Lines" style="font-size:30px;cursor:pointer" onclick="openNav()">&#9776;</a>
+                <a id="logo-box-mob" onclick="redirectToLogin()">
+                    <img src="logo.png" alt="DotOne">
+                    <h1 id="logo-name-mob">Dot<span>One</span></h1>
+                </a>
+            </div>
+
+            <div id="bottomNav">
+                <a href="#home" class="nav-item">
+                    <i class="fas fa-home"></i>
+                </a>
+                <a href="#search" class="nav-item">
+                    <i class="fas fa-search"></i>
+                </a>
+                <a href="#notifications" class="nav-item">
+                    <i class="fas fa-bell"></i>
+                </a>
+                <a href="#profile" class="nav-item">
+                    <i class="fas fa-user"></i>
+                </a>
+            </div>
+            
+            <div id="myNav" class="overlay">
+                <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">&times;</a>
+                <div class="overlay-content">
+                    <a id="auth-check-option-mob" onclick="redirectToLogin()">Login</a>
+                    <a class="navlink2" onclick="location.href = 'text-editor.html'">Text Editor</a>
+                    <a class="navlink3" onclick="showSection('setting')">Setting</a>
+                    <a class="navlink4" onclick="showSection('whatsNew')">Contact Us</a>
+                </div>
+            </div>
+
     
             <main class="main-content">
                 <section class="top-section">
@@ -60,7 +95,7 @@
 
 
 
-                    <div class="container2">
+                    <div class="container2" id="container2">
                         <div class="box box1">
                             <h3>Box 1</h3>
                             <p>Some content here...</p>

@@ -10,6 +10,10 @@ auth.onAuthStateChanged(user => {
             document.getElementById('auth-check-option').innerHTML = `
                 <i id="auth-check-option"  onclick="logoutUser()"> Logout</i> 
             `;
+            document.getElementById('auth-check-option-mob').innerHTML = `
+                <i id="auth-check-option"  onclick="logoutUser()"> Logout</i> 
+            `;
+
             loadUserFiles();
           }
       }).catch(error => {
@@ -18,14 +22,18 @@ auth.onAuthStateChanged(user => {
       });
   } else {
       document.getElementById('auth-check-option').innerHTML = `Login | Signup`;
+      document.getElementById('auth-check-option-mob').innerHTML = `Login | Signup`;
       document.getElementById('user-name-email').innerHTML = `
-      <h2 id='login-magic'>Login to See, <span>Magic</span></h2>`;
+      <h2 id='login-magic' onclick='redirectToLogin()'>Login to See, <span>Magic</span></h2>`;
+            
+      document.getElementById("container2").style.display = "none";
   }
 });
 
 function logoutUser() {
   auth.signOut().then(() => {
     alert("Logged out successfully!");
+    window.location.href = '';
   });
 }
 
@@ -102,16 +110,15 @@ async function loadUserFiles() {
         return;
     }
 
-    const totalFiles = filesSnapshot.size;  // Get the total number of files
+    const totalFiles = filesSnapshot.size;
     const fileCountElement = userFilesContainer.querySelector('.file-count');
 
-    // Update the file count
     fileCountElement.textContent = `${totalFiles} Files`;
 
     let fileCounter = 0;
 
     filesSnapshot.forEach((doc) => {
-        if (fileCounter < 4) {  // Only show top 4 files
+        if (fileCounter < 4) {
             const fileData = doc.data();
             const fileID = doc.id;
 
@@ -131,6 +138,25 @@ async function loadUserFiles() {
         fileCounter++;
     });
 }
+
+
+
+
+
+
+
+
+
+
+
+function openNav() {
+    document.getElementById("myNav").style.width = "100%";
+  }
+  
+  function closeNav() {
+    document.getElementById("myNav").style.width = "0%";
+  }
+
 
 
 
