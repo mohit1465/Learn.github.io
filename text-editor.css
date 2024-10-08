@@ -216,15 +216,43 @@ footer {
     color: #ffffff;
 }
 
-#profileInfo{
-    display: none;
-    position: absolute;
-    border-radius: 50px;
-    border-top-right-radius: 0px;
-    top: 60px;
-    height: 500px;
-    width: 450px;
-    right: 20px;
-    background-color: #222222;
-    border: #ccc 1px solid;
+
+
+
+
+
+#profileInfo {
+    position: fixed;
+    top: 80px;
+    bottom: 70px;
+    left: 80px;
+    right: 80px;
+    margin: 0;
+    background-color: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    border-radius: 8px;
+    padding: 20px;
+    backdrop-filter: blur(8px);
+    overflow: auto;
 }
+
+
+
+
+
+
+
+
+
+
+@media screen and (max-width:700px){
+    #total-lines{
+        display: none;
+    }
+}
+
+
+
+
+
+

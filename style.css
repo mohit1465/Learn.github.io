@@ -402,14 +402,19 @@ input:checked + .slider:before {
     padding: 5px 10px;
 }
 
+.users-files .header{
+    margin-bottom: 9px;
+}
+
 .file-entry {
     text-align: left;
     font-size: 14px;
     color: #333;
-    padding: 10px 15px;
+    padding: 8px 15px;
     border-bottom: 1px solid #e0e0e0;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    border-radius: 12px;
 }
 
 .file-entry:hover {
@@ -420,20 +425,13 @@ input:checked + .slider:before {
     border-bottom: none;
 }
 
-
-
-
-
-
-
-
 #topNav {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     background-color: var(--edit-btn-bg-color);
-    color: white;
+    color: var(--background-color);
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -443,13 +441,13 @@ input:checked + .slider:before {
 #menu-Lines {
     font-size: 40px;
     cursor: pointer;
-    color: white;
+    color: var(--background-color);
 }
 
 #logo-box-mob {
     display: flex;
     align-items: center;
-    color: white;
+    color: var(--background-color);
     text-decoration: none;
     cursor: pointer;
 }
@@ -468,13 +466,6 @@ input:checked + .slider:before {
     color: #f39c12;
 }
 
-
-
-
-
-
-
-
 #bottomNav {
     position: fixed;
     bottom: 0;
@@ -490,7 +481,7 @@ input:checked + .slider:before {
 }
 
 .nav-item {
-    color: white;
+    color: var(--background-color);
     text-align: center;
     text-decoration: none;
     flex-grow: 1;
@@ -507,24 +498,6 @@ input:checked + .slider:before {
         display: none;
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 @media (max-width: 1160) {
     .users-files {
@@ -592,7 +565,8 @@ input:checked + .slider:before {
     }
 
     .file-entry{
-        padding: 15px 15px;
+        padding: 12px 15px;
+        border-radius: 12px;
     }
 
     #update{

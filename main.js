@@ -139,24 +139,19 @@ async function loadUserFiles() {
     });
 }
 
-
-
-
-
-
-
-
-
-
-
 function openNav() {
     document.getElementById("myNav").style.width = "100%";
-  }
+}
   
-  function closeNav() {
+function closeNav() {
     document.getElementById("myNav").style.width = "0%";
-  }
+}
 
+document.querySelectorAll('#myNav .overlay-content a').forEach(function(link) {
+    link.addEventListener('click', function() {
+        closeNav();
+    });
+});
 
 
 

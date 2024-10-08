@@ -340,7 +340,6 @@ function changeFileName() {
     }
 }
 
-
 editor.on('cursorActivity', () => {
     const { line, ch } = editor.getCursor();
     document.getElementById('cursor-position').textContent = `Ln: ${line + 1}, Col: ${ch + 1}`;
@@ -362,15 +361,6 @@ document.addEventListener("DOMContentLoaded", function() {
     loadUserFiles();
 });
 
-
-
-
-
-
-
-
-
-
 window.onload = () => {
     addTab('Untitled.txt');
     const savedTheme = localStorage.getItem('theme') || 'light';
@@ -385,35 +375,6 @@ function redirectToLogin() {
         window.location.href = 'login-signup.html';
     }
 }
-
-
-
-// function allData() {
-//     const tabs = document.querySelectorAll('.tab');
-//     let allFilesData = [];
-//     const content = editor.getValue();
-
-//     alert(`content:${content}`);
-
-//     return allFilesData;
-// }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 function toggleMenu() {
     const profileInfo = document.getElementById('profileInfo');
@@ -590,3 +551,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+
+
+
+
+
+
+
+profileInfo
