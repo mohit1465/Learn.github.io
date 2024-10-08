@@ -222,6 +222,7 @@ footer {
 
 
 #profileInfo {
+    display: none;
     position: fixed;
     top: 80px;
     bottom: 70px;
