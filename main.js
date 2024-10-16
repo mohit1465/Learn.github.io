@@ -152,7 +152,7 @@ document.querySelectorAll('#myNav .overlay-content a').forEach(function(link) {
         closeNav();
     });
 });
-document.designMode = "on";
+
 
 
 
